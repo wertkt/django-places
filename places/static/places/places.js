@@ -1,35 +1,59 @@
-var dj = jQuery.noConflict();
+function setupDjangoPlaces(mapConfig, markerConfig, childs) {
+  var latInput = childs[1];
+  var lngInput = childs[2];
+  var searchBox = new google.maps.places.SearchBox(childs[0]);
+  var gmap = new google.maps.Map(childs[3], mapConfig);
+  var marker = new google.maps.Marker(markerConfig);
 
-dj(function() {
-  setTimeout(function() {
-  var mapElement = dj("#map_location");
-  var mapInput = dj("[data-id='map_place']");
-  var options = {
-    map: mapElement,
-    mapOptions: dj(".places-widget").data("mapOptions") ? dj(".places-widget").data("mapOptions") : { zoom: 10 },
-    markerOptions: dj(".places-widget").data("markerOptions") ? dj(".places-widget").data("markerOptions") : { draggable: true },
-    types: ["geocode", "establishment"],
-    location: mapInput && mapInput.val().length > 0 ? [dj("[data-id='map_latitude']").val(), dj("[data-id='map_longitude']").val()] : false,
-  },
-  geocomplete = mapInput;
+  if (latInput.value && lngInput.value) {
+    var location = {
+      lat: parseFloat(latInput.value),
+      lng: parseFloat(lngInput.value)
+    };
+    marker.setPosition(location);
+    marker.setMap(gmap);
+    gmap.setCenter(location);
+    gmap.setZoom(16);
+  };
 
-  geocomplete
-    .geocomplete(options)
-    .bind("geocode:result", function(event, result) {
-      dj("[data-id='map_latitude']").val(result.geometry.location.lat());
-      dj("[data-id='map_longitude']").val(result.geometry.location.lng());
-    })
-    .bind("geocode:error", function(event, status){
-      console.log("ERROR: " + status);
-    })
-    .bind("geocode:multiple", function(event, results){
-      console.log("Multiple: " + results.length + " results found");
-    })
-    .bind("geocode:dragged", function(event, latLng){
-      dj("[data-id='map_latitude']").val(latLng.lat());
-      dj("[data-id='map_longitude']").val(latLng.lng());
+  searchBox.addListener('places_changed', function () {
+    var places = searchBox.getPlaces();
+
+    if (places.length == 0) {
+      return;
+    }
+    places.forEach(function (place) {
+      if (!place.geometry) {
+        console.log('Returned place contains no geometry');
+        return;
+      };
+      if (marker) {
+        marker.setMap(null);
+      };
+      marker.setPosition(place.geometry.location);
+      marker.setMap(gmap);
+      latInput.value = place.geometry.location.lat();
+      lngInput.value = place.geometry.location.lng();
+      gmap.setCenter(place.geometry.location);
+      gmap.setZoom(16);
     });
+  });
 
-  },500)
+  google.maps.event.addListener(marker, 'dragend', function (event) {
+    latInput.value = event.latLng.lat();
+    lngInput.value = event.latLng.lng();
+  });
+}
 
-});
+function initDjangoPlaces() {
+  var widgets = document.getElementsByClassName('places-widget');
+  for (var iter = 0; iter < widgets.length; iter++) {
+    setupDjangoPlaces(
+      JSON.parse(widgets[iter].dataset.mapOptions),
+      JSON.parse(widgets[iter].dataset.markerOptions),
+      widgets[iter].children
+    );
+  };
+};
+
+google.maps.event.addDomListener(window, 'load', initDjangoPlaces);

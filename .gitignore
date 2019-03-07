@@ -1,6 +1,8 @@
 *.py[cod]
 __pycache__
 
+.DS_Store
+
 # C extensions
 *.so
 
@@ -45,3 +47,12 @@ output/*/index.html
 
 # Sphinx
 docs/_build
+
+# env
+.env
+env
+
+# django
+db.sqlite3
+
+.vscode

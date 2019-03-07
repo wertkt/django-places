@@ -24,12 +24,12 @@ Install dj-places and add it to your installed apps:
     	...
     )
 
-Add the following settings and maps api key ( [read more here](https://developers.google.com/maps/documentation/javascript/3.exp/reference) ):
+Add the following settings and maps api key ( [read more here](https://developers.google.com/maps/documentation/javascript/reference/map) ):
 
     PLACES_MAPS_API_KEY='YourAwesomeUltraSecretKey'
-    MAP_WIDGET_HEIGHT=480
-    MAP_OPTIONS={}
-    MARKER_OPTIONS={}
+    PLACES_MAP_WIDGET_HEIGHT=480
+    PLACES_MAP_OPTIONS='{"center": { "lat": 38.971584, "lng": -95.235072 }, "zoom": 10}'
+    PLACES_MARKER_OPTIONS='{"draggable": true}'
 
 Then use it in a project:
 
@@ -51,6 +51,18 @@ This enables the following API:
     13.41156
 ```
 
+For using outside the Django Admin:
+
+```html
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Save">
+    {{ form.media }}
+</form>
+```
+Add the `{{ form.media }}` in your template.
+
 Demo
 ------
 
@@ -60,7 +72,6 @@ TODO-LIST
 --------
 
 * [ ] Write some test ASAP!
-* [ ] Support Inline Admin
 
 Running Tests
 --------------
